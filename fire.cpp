@@ -18,32 +18,32 @@ const uint32_t firePalette[37] = {
 };
 
 
-std::vector<int> firePixels(FIRE_WIDTH * FIRE_HEIGHT, 0);
+vector<vector<int>> firePixels(FIRE_HEIGHT, vector<int>(FIRE_WIDTH, 0));
 
 
 
-void spreadFire(int src){
+void spreadFire(int row, int col){
 
-    int pixel = firePixels[src];
+    int pixel = firePixels[row][col];
     if(pixel == 0){
-        firePixels[src - FIRE_WIDTH] = 0;
+        firePixels[row- 1][col] = 0;
     }
     else{
         int randIdx = rand() %3;
         int decay = randIdx & 1;
 
-        int dist = src - FIRE_WIDTH - randIdx + 1;
+        int new_col = col - randIdx + 1;
 
-        if(dist >=0 && dist <(FIRE_HEIGHT * FIRE_WIDTH)){
-            firePixels[dist] = pixel - decay;
+        if(new_col >=0 && new_col < FIRE_WIDTH){
+            firePixels[row - 1][new_col] = pixel - decay;
         }
     }
 }
 
 void fire(){
-    for(int x = 0; x < FIRE_WIDTH; ++x){
-        for(int y =1; y< FIRE_HEIGHT; ++y){
-            spreadFire(y * FIRE_WIDTH + x);
+    for(int x = 1; x < FIRE_HEIGHT; ++x){
+        for(int y = 0; y< FIRE_WIDTH; ++y){
+            spreadFire(x, y);
         }
     }
 }
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]){
 
     
     for (int x = 0; x < FIRE_WIDTH; x++) {
-        firePixels[(FIRE_HEIGHT - 1) * FIRE_WIDTH + x] = 36;
+        firePixels[FIRE_HEIGHT - 1][x] = 36;
     }
     bool running = true;
     SDL_Event events;
@@ -78,8 +78,10 @@ int main(int argc, char* argv[]){
         uint32_t* screenBuffer = static_cast<uint32_t*>(texturePixels);
 
         // map pixel codes to actual firePalette
-        for (int i = 0; i < FIRE_WIDTH * FIRE_HEIGHT; i++) {
-            screenBuffer[i] = firePalette[firePixels[i]];
+        for(int row = 0; row< FIRE_HEIGHT; ++row){
+            for(int col = 0; col < FIRE_WIDTH; ++col){
+                screenBuffer[row * FIRE_WIDTH + col] = firePalette[firePixels[row][col]];
+            }
         }
 
         SDL_UnlockTexture(texture);
