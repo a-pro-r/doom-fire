@@ -4,3 +4,5 @@ Implementation of Doom Fire
 
 `.\fire.exe "#b300ff"`
 <img width="898" height="475" alt="image" src="https://github.com/user-attachments/assets/fa60e830-02a9-45cd-8147-9cb1d0edadd2" />
+
+inspired from [doom-fire-algorithm](https://github.com/filipedeschamps/doom-fire-algorithm)
