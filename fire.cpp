@@ -1,26 +1,58 @@
 using namespace std;
 #include<iostream>
 #include<SDL.h>
+#include <cstdio>
 #include<vector>
+#include<string>
 
 const int FIRE_WIDTH = 300;
 const int FIRE_HEIGHT = 300;
 const int SCREEN_SCALE = 3; 
+int r, g, b;
+const int startR = 7, startG = 7, startB = 7;
 
-// Iconic 37-color palette from the PSX Doom fire effect
-const uint32_t firePalette[37] = {
-    0x070707FF, 0x1F0707FF, 0x2F0F07FF, 0x470F07FF, 0x571707FF, 0x671F07FF, 0x771F07FF,
-    0x8F2707FF, 0x9F2F07FF, 0xAF3F07FF, 0xBF4707FF, 0xC74707FF, 0xDF4F07FF, 0xDF5707FF,
-    0xDF5707FF, 0xD75F07FF, 0xD75F07FF, 0xD7670FFF, 0xCF6F0FFF, 0xCF770FFF, 0xCF7F0FFF,
-    0xCF8717FF, 0xC78717FF, 0xC78F17FF, 0xC7971FFF, 0xBF9F1FFF, 0xBF9F1FFF, 0xBFA727FF,
-    0xBFA727FF, 0xBFAF2FFF, 0xB7AF2FFF, 0xB7B72FFF, 0xB7B737FF, 0xCFCF6FFF, 0xDFDF9FFF,
-    0xEFEFC7FF, 0xFFFFFFFF
-};
+// Generate 37-color palette
+uint32_t firePalette[37];
 
 
 vector<vector<int>> firePixels(FIRE_HEIGHT, vector<int>(FIRE_WIDTH, 0));
 
+bool parseHexColor(const std::string& s, int& r, int& g, int& b){
+    if (std::sscanf(s.c_str(), "#%02x%02x%02x", &r, &g, &b) == 3) {
+        return true;
+    } else {
+        return false;
+    }
 
+}
+
+void generatePalette(int r, int g, int b){
+    int R,G,B;
+    uint32_t a = 255;
+    for(int i =0 ; i <= 18; ++i){
+        float t = i / 18.0;
+        R = startR + (r - startR) * t;
+        G = startG + (g - startG) * t;
+        B = startB + (b - startB) * t;
+        uint32_t color = ((R & 0xFF) << 24) | 
+                 ((G & 0xFF) << 16) | 
+                 ((B & 0xFF) << 8)  | 
+                 (a & 0xFF);
+        firePalette[i] = color;
+    }
+    for(int i = 18; i<= 36;++i){
+        float t = (i - 18) / 18.0;
+        R = r + (255 - r) * t;
+        G = g + (255 - g) * t;
+        B = b + (255 - b) * t;
+        uint32_t color = ((R & 0xFF) << 24) | 
+                 ((G & 0xFF) << 16) | 
+                 ((B & 0xFF) << 8)  | 
+                 (a & 0xFF);
+        firePalette[i] = color;
+    }
+
+}
 
 void spreadFire(int row, int col){
 
@@ -51,6 +83,14 @@ void fire(){
 
 int main(int argc, char* argv[]){
 
+    int r = 0xDF, g = 0x57, b = 0x07;
+    if (argc > 1) {                             
+        if (!parseHexColor(argv[1], r, g, b)) {
+            std::fprintf(stderr,
+                "Invalid color '%s', using default orange\n", argv[1]);
+        }
+    }
+    generatePalette(r, g, b);
     SDL_Init(SDL_INIT_EVERYTHING);
     SDL_Window *window = SDL_CreateWindow("hello_world", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,FIRE_WIDTH * SCREEN_SCALE, FIRE_HEIGHT *SCREEN_SCALE, SDL_WINDOW_SHOWN);
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, 0);
